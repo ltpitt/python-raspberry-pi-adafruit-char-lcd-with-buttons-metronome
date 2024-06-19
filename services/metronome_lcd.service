@@ -1,0 +1,13 @@
+# /etc/systemd/system/metronome_lcd.service
+[Unit]
+Description=Metronome LCD Service
+After=multi-user.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/root/scripts/metronome/venv/bin/python /root/scripts/metronome/metronome_lcd.py
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
