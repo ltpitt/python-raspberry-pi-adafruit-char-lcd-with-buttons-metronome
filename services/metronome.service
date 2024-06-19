@@ -1,0 +1,13 @@
+# /etc/systemd/system/metronome.service
+[Unit]
+Description=Metronome Daemon
+After=network.target
+
+[Service]
+ExecStart=/root/scripts/metronome/venv/bin/python /root/scripts/metronome/metronome.py
+Restart=always
+User=root
+WorkingDirectory=/root/scripts/metronome
+
+[Install]
+WantedBy=multi-user.target
