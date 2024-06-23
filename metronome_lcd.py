@@ -49,46 +49,37 @@ def save_settings():
     subprocess.run(["sudo", "systemctl", "restart", "metronome.service"])
 
 
-# Previous state of the settings
 prev_bmp = bmp - 1
 prev_volume = volume - 1
 prev_is_metronome_enabled = not is_metronome_enabled
 
 
-# Function to update only changed settings on the display
 def update_display():
     global prev_bmp, prev_volume, prev_is_metronome_enabled
-    # Construct the full line with static text and variable value
     bmp_display = f"BPM: {bmp:3}"
-    # Scale the volume for display
     volume_display = f"Vol: {int(volume * 10):2}"
     enabled_display = "On " if is_metronome_enabled else "Off"
 
-    # Update BPM if changed
     if bmp != prev_bmp:
         lcd.cursor_position(0, 0)  # Move cursor to the beginning of the first row
         lcd.message = bmp_display
         prev_bmp = bmp
 
-    # Update Volume if changed
     if volume != prev_volume:
         lcd.cursor_position(9, 0)  # Move cursor to the position after BPM display
         lcd.message = volume_display
         prev_volume = volume
 
-    # Update Metronome Enabled/Disabled if changed
     if is_metronome_enabled != prev_is_metronome_enabled:
         lcd.cursor_position(0, 1)  # Move cursor to the beginning of the second row
         lcd.message = f"Metronome: {enabled_display}"
         prev_is_metronome_enabled = is_metronome_enabled
 
 update_display()
-last_button_press_time = time.time()  # Initialize the last button press time
-is_backlight_on = True  # Track the state of the backlight
+last_button_press_time = time.time()
+is_backlight_on = True
 
-# Main loop
 while True:
-    # Check for button presses and update the display
     if lcd.right_button or lcd.left_button or lcd.up_button or lcd.down_button or lcd.select_button:
         if not is_backlight_on:
             turn_on_backlight()
