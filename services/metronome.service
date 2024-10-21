@@ -4,7 +4,7 @@ Description=Metronome Daemon
 After=network.target
 
 [Service]
-ExecStart=/root/scripts/metronome/venv/bin/python /root/scripts/metronome/metronome.py
+ExecStart=/root/scripts/metronome/metronome
 Restart=always
 User=root
 WorkingDirectory=/root/scripts/metronome
