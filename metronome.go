@@ -12,18 +12,20 @@ import (
     "github.com/faiface/beep/wav"
 )
 
-func playBeep(soundPath string, wg *sync.WaitGroup) error {
+func playBeep(soundPath string, wg *sync.WaitGroup) {
     defer wg.Done()
 
     f, err := os.Open(soundPath)
     if err != nil {
-        return fmt.Errorf("failed to open sound file: %w", err)
+        fmt.Printf("Failed to open sound file: %v\n", err)
+        return
     }
     defer f.Close()
 
     streamer, _, err := wav.Decode(f)
     if err != nil {
-        return fmt.Errorf("failed to decode sound file: %w", err)
+        fmt.Printf("Failed to decode sound file: %v\n", err)
+        return
     }
     defer streamer.Close()
 
@@ -32,7 +34,6 @@ func playBeep(soundPath string, wg *sync.WaitGroup) error {
         done <- true
     })))
     <-done
-    return nil
 }
 
 func runMetronome(bpm int, isMetronomeEnabled bool, soundPath string) {
@@ -40,21 +41,19 @@ func runMetronome(bpm int, isMetronomeEnabled bool, soundPath string) {
     defer ticker.Stop()
 
     wg := &sync.WaitGroup{}
-    for isMetronomeEnabled {
-        <-ticker.C
-        fmt.Println("Tick") // Log every click
+    for {
+        select {
+        case <-ticker.C:
+            if isMetronomeEnabled {
+                fmt.Println("Tick") // Log every click
 
-        wg.Add(1)
-        go func() {
-            err := playBeep(soundPath, wg)
-            if err != nil {
-                fmt.Println(err)
+                wg.Add(1)
+                go playBeep(soundPath, wg)
             }
-        }()
+        }
     }
 
-    // Ensure all goroutines complete
-    wg.Wait()
+    wg.Wait() // Ensure all goroutines complete
     speaker.Close()
 }
 
@@ -66,7 +65,7 @@ func loadConfig() (int, bool, string) {
         os.Exit(1)
     }
 
-    bpm := cfg.Section("metronome").Key("bmp").MustInt(120)
+    bpm := cfg.Section("metronome").Key("bpm").MustInt(120)
     isMetronomeEnabled := cfg.Section("metronome").Key("is_metronome_enabled").MustBool(true)
     soundFile := cfg.Section("metronome").Key("audio_file").MustString("beep.wav")
 
